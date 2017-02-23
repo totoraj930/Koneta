@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<title>CSS 3D Room</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+	<!-- Color -->
+	<meta name="theme-color" content="#000">
+	<!-- CSS -->
+	<link rel="stylesheet" href="css/main.css">
+	<!-- Script -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="item/main.js"></script>
+</head>
+<body>
+
+	<header class="head">
+
+	</header>
+
+
+	<div class="center">
+		<div class="wrap">
+			<div id="room" class="room">
+
+				<div class="action_button wall w-back" data-action="s-back">
+					<div class="inner">
+						<h1 class="title">CSS 3D Room</h1>
+					</div>
+				</div>
+
+				<div class="action_button wall w-top" data-action="s-top">
+
+				</div>
+
+				<div class="action_button wall w-bottom" data-action="s-bottom">
+					<div class="inner">
+						<h2>なにこれ？</h2>
+						<p>これはCSSで3Dっぽい部屋をつくってみたデモページです。</p>
+						<p><code>perspective</code>というプロパティを使用して立体的な表示を実現しています。</p>
+						<p>まともに動くのはChromeくらいです。</p>
+						<p>EdgeやFirefoxでも一応動きますが、壁がチラついたりとかなり動作が不安定です。</p>
+						<p><a href="https://github.com/totoraj930/css-3d-room">View on GitHub</a></p>
+					</div>
+				</div>
+
+				<div class="action_button wall w-right" data-action="s-right">
+
+				</div>
+
+				<div class="action_button wall w-left" data-action="s-left">
+
+				</div>
+
+
+			</div>
+		</div>
+		<div>
+			<ul class="btn-list">
+				<li><button class="action_button" data-action="s-top">Top</button></li>
+				<li><button class="action_button" data-action="s-bottom">Bottom</button></li>
+				<li><button class="action_button" data-action="s-right">Right</button></li>
+				<li><button class="action_button" data-action="s-left">Left</button></li>
+				<li><button class="action_button" data-action="s-back">Back</button></li>
+				<li><button class="action_button" data-action="s-front">Default</button></li>
+			</ul>
+		</div>
+	</div>
+
+
+	<footer class="foot">
+		<div class="foot-inner inner">
+			<p class="copyright">
+				&copy; 2016 totoraj. All rights reserved. This site was designed by totoraj.
+			</p>
+		</div>
+	</footer>
+
+</body>
+</html>

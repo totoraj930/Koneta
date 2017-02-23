@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>canvas汚染</title>
+	<style>
+		*, *:before, *:after {
+			margin: 0;
+			padding: 0;
+			border: none;
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			-ms-box-sizing: border-box;
+			-o-box-sizing: border-box;
+			box-sizing: border-box;
+		}
+		body {
+			padding-bottom: 3em;
+			background: #fff;
+			line-height: 1;
+			font-size: 16px;
+			font-family: "Helvetica Neue", "メイリオ", Meiryo, Helvetica, Arial, "游ゴシック", YuGothic, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+		}
+		input, button,textarea {
+			font-family: "Helvetica Neue", "メイリオ", Meiryo, Helvetica, Arial, "游ゴシック", YuGothic, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+		}
+		canvas {
+			display: block;
+			max-width: 95%;
+			margin: 3em auto;
+			background: #fff;
+			border: 1px solid #555;
+		}
+		.controls {
+			display: block;
+			font-size: 0;
+			text-align: center;
+		}
+		input {
+			display: inline-block;
+			width: 20em;
+			max-width: 90%;
+			margin-bottom: .3em;
+			padding: .3em .5em;
+			border: 1px solid #555;
+			border-radius: 3px;
+			box-shadow: inset 0 0 5px #555;
+			font-size: 1rem;
+		}
+		button {
+			display: inline-block;
+			margin-left: .3em;
+			padding: .3em .5em;
+			background: #2994ff;
+			color: #fff;
+			border: 1px solid #555;
+			border-radius: 3px;
+			font-size: 1rem;
+			font-weight: bold;
+			cursor: pointer;
+		}
+		.bad {
+			background: #ff3636;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+	<div class="controls">
+		<input type="text" id="target_url" value="https://pbs.twimg.com/media/C42TeeNVYAAgWLW.jpg">
+		<button id="blob_draw_button">Blobを使用て描画</button>
+		<button id="normal_draw_button" class="bad">通常描画(汚染される)</button>
+	</div>
+	<div class="controls">
+		<button id="save_image_button">toDataURL()</button>
+	</div>
+	<script>
+		var $canvas = document.getElementById("canvas"),
+			ctx = $canvas.getContext("2d"),
+			$target_url = document.getElementById("target_url"),
+			$normal_draw_button = document.getElementById("normal_draw_button"),
+			$blob_draw_button = document.getElementById("blob_draw_button"),
+			$save_image_button = document.getElementById("save_image_button"),
+			width = 800,
+			height = 450;
+		var tainted = false;
+		$canvas.width = width;
+		$canvas.height = height;
+
+		$target_url.addEventListener("focus", function () {
+			this.select();
+		});
+
+		$normal_draw_button.addEventListener("click", function () {
+			clearCanvas();
+			var url = $target_url.value;
+			if (url.length < 1) return;
+			drawImage(url);
+			tainted = true;
+		});
+
+		$blob_draw_button.addEventListener("click", function () {
+			clearCanvas();
+			var url = $target_url.value;
+			if (url.length < 1) return;
+			if (tainted) {
+				drawError("既に汚染されています");
+				return;
+			}
+			var req = new XMLHttpRequest();
+			req.open("GET", url, true);
+			req.responseType = "arraybuffer";
+			req.addEventListener("load", function (event) {
+				if (req.status !== 200) {
+					drawError("URL ERROR");
+				}
+				var blob = new Blob([req.response]),
+					blobUrl = URL.createObjectURL(blob);
+				drawImage(blobUrl);
+			});
+			req.send();
+		});
+
+		$save_image_button.addEventListener("click", function () {
+			var dataUrl;
+			try {
+				dataUrl = $canvas.toDataURL();
+			} catch (error) {
+				clearCanvas();
+				ctx.font = "16px sans-serif";
+				ctx.fillStyle = "#000"
+				ctx.fillText(error, 5, 16);
+				drawError("リロードで汚染を解除してね");
+				return;
+			}
+			var anchor = document.createElement("a");
+			anchor.href = dataUrl;
+			anchor.setAttribute("download", "success");
+			var event = new MouseEvent("click");
+			anchor.dispatchEvent(event);
+		});
+
+		function drawImage(url) {
+			var image = new Image();
+			image.src = url;
+			image.addEventListener("load", function () {
+				// 画像のサイズ調整
+				var iw = image.width,
+					ih = image.height;
+				var mag = 1;
+				if (iw > width || ih > height) {
+					if (iw > ih) {
+						mag = width/iw;
+					} else {
+						mag = height/ih;
+					}
+				}
+				var dw = iw*mag,
+					dh = ih*mag;
+				// 真ん中に描画
+				ctx.drawImage(
+					image,
+					(width-dw)/2, (height-dh)/2,
+					dw, dh
+				);
+			});
+			image.addEventListener("error", function (error) {
+				drawError("URL ERROR");
+			});
+		}
+
+		function clearCanvas() {
+			ctx.clearRect(0, 0, width, height);
+		}
+		function drawError(text) {
+			var x = [98, 100, 102],
+				y = [98, 100, 102];
+			ctx.font = "40px sans-serif";
+			ctx.fillStyle = "#fff";
+			for (var i=0; i < 3; i++) {
+				ctx.fillText(text, x[i], y[0]);
+				ctx.fillText(text, x[i], y[1]);
+				ctx.fillText(text, x[i], y[2]);
+			}
+			ctx.fillStyle = "#000";
+			ctx.fillText(text, x[1], y[1]);
+		}
+	</script>
+</body>
+</html>
